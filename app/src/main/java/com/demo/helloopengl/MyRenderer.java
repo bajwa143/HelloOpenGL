@@ -2,12 +2,17 @@ package com.demo.helloopengl;
 
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 // Renderer class controls what gets drawn on the GLSurfaceView with which it is associated.
 public class MyRenderer implements GLSurfaceView.Renderer {
+    // vPMatrix is an abbreviation for "Model View Projection Matrix"
+    private final float[] vPMatrix = new float[16];
+    private final float[] projectionMatrix = new float[16];
+    private final float[] viewMatrix = new float[16];
 
     Triangle triangle;
 
@@ -40,13 +45,32 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         // Redraw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        triangle.draw();
+
+        // Set the camera position (View matrix)
+        Matrix.setLookAtM(viewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+        // Calculate the projection and view transformation
+        // multiple projectionMatrix and viewMatrix and store result in vPMatrix
+        Matrix.multiplyMM(vPMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+
+        triangle.draw(vPMatrix);
     }
 
     // Called if the geometry of the view changes, for example when the device's screen orientation changes
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        // The data for a projection transformation is calculated in the onSurfaceChanged()
+        // method of your GLSurfaceView.Renderer class
+
+        // take height and width of the GLSurfaceView and uses it calculate ratio
+        float ratio = (float) width / height;
+
+        // populate a projection transformation Matrix
+        // this projection matrix is applied to object coordinates
+        // in the onDrawFrame() method
+        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
     }
 
     /*

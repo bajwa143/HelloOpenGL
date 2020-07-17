@@ -22,25 +22,32 @@ public class Triangle {
     //                    /\
     //                  /   \
     //                /      \
-    //              /_________\   (-0.5,-0.31100,0.0)
-    //   (0.5,-0.31100,0.0)
+    //              /_________\ (0.5,-0.31100,0.0)
+    //   (-0.5,-0.31100,0.0)
     //-----------------------------------------------------------------
     static float triangleCoords[] = {   // in counterclockwise order:
-
             0.0f, 0.622008459f, 0.0f, // top
             -0.5f, -0.311004243f, 0.0f, // bottom left
             0.5f, -0.311004243f, 0.0f  // bottom right
     };
+
     /*
     Drawing a defined shape using OpenGL ES 2.0 requires a significant amount of code,
     because you must provide a lot of details to the graphics rendering pipeline
     */
     // OpenGL ES graphics code for rendering the vertices of a shape
     private final String vertexShaderCode =
-            "attribute vec4 vPosition;" +
+            // This matrix member variable provides a hook to manipulate
+            // the coordinates of the objects that use this vertex shader
+            "uniform mat4 uMVPMatrix;" +
+                    "attribute vec4 vPosition;" +
                     "void main() {" +
-                    "  gl_Position = vPosition;" +
+                    // the matrix must be included as a modifier of gl_Position
+                    // Note that the uMVPMatrix factor *must be first* in order
+                    // for the matrix multiplication product to be correct.
+                    "  gl_Position = uMVPMatrix * vPosition;" + // add a matrix variable to the vertex shader
                     "}";
+
     // OpenGL ES code for rendering the face of a shape with colors or textures
     private final String fragmentShaderCode =
             "precision mediump float;" +
@@ -48,6 +55,10 @@ public class Triangle {
                     "void main() {" +
                     "  gl_FragColor = vColor;" +
                     "}";
+
+    // Use to access and set the view transformation
+    private int vPMatrixHandle;
+
     // An OpenGL ES object that contains the shaders you want to use for drawing one or more shapes
     private final int mProgram;
     private final int vertexCount = triangleCoords.length / COORDS_PER_VERTEX;
@@ -93,16 +104,14 @@ public class Triangle {
         GLES20.glLinkProgram(mProgram);
     }
 
-    public void draw() {
+    public void draw(float[] mvpMatrix) {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 
         // get handle to vertex shader's vPosition member
         positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(positionHandle);
-
         // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(positionHandle, COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
@@ -110,9 +119,15 @@ public class Triangle {
 
         // get handle to fragment shader's vColor member
         colorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-
         // Set color for drawing the triangle
         GLES20.glUniform4fv(colorHandle, 1, color, 0);
+
+//------------------To Apply Camera Transformation---------------------
+        // get handle to shape's transformation matrix
+        vPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        // Pass the projection and view transformation to the shader
+        GLES20.glUniformMatrix4fv(vPMatrixHandle, 1, false, mvpMatrix, 0);
+//---------------------------------------------------------------------
 
         // Draw the triangle
         // first arguments tells to draw triangle
