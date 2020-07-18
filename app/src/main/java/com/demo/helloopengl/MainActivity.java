@@ -47,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
             This setting prevents the GLSurfaceView frame from being redrawn until you call requestRender(),
             which is more efficient for this sample app
             */
-            setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            // To enable continuous rendering, disable render mode
+            //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         }
     }
 }

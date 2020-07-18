@@ -3,6 +3,7 @@ package com.demo.helloopengl;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -40,6 +41,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
     }
 
+    private float[] rotationMatrix = new float[16];
+
     // Called for each redraw of the view
     @Override
     public void onDrawFrame(GL10 gl) {
@@ -53,7 +56,21 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         // multiple projectionMatrix and viewMatrix and store result in vPMatrix
         Matrix.multiplyMM(vPMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
 
-        triangle.draw(vPMatrix);
+//-------------------------Add motion----------------------------------
+        float[] scratch = new float[16];
+        // Create a rotation transformation for the triangle
+        long time = SystemClock.uptimeMillis() % 4000L;
+        float angle = 0.090f * ((int) time);
+        // Creates a matrix for rotation by angle a (in degrees) around the axis (x, y, z)
+        Matrix.setRotateM(rotationMatrix, 0, angle, 0, 0, -1.0f);
+
+        // Combine the rotation matrix with the projection and camera view
+        // Note that the vPMatrix factor *must be first* in order
+        // for the matrix multiplication product to be correct.
+        Matrix.multiplyMM(scratch, 0, vPMatrix, 0, rotationMatrix, 0);
+//---------------------------------------------------------------------
+        //triangle.draw(vPMatrix);
+        triangle.draw(scratch);
     }
 
     // Called if the geometry of the view changes, for example when the device's screen orientation changes
