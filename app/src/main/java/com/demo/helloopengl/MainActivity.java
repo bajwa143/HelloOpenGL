@@ -3,6 +3,7 @@ package com.demo.helloopengl;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.view.MotionEvent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -30,8 +31,13 @@ public class MainActivity extends AppCompatActivity {
         to capture touch events, which is covered in the Respond to touch events lesson
      */
     class MyGLSurfaceView extends GLSurfaceView {
-        private Renderer renderer;
+        private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
+        private MyRenderer renderer;
 
+        // In order to make your OpenGL ES application respond to touch events,
+        // you must implement the onTouchEvent() method in your GLSurfaceView class
+        private float previousX;
+        private float previousY;
         public MyGLSurfaceView(Context context) {
             super(context);
 
@@ -48,7 +54,38 @@ public class MainActivity extends AppCompatActivity {
             which is more efficient for this sample app
             */
             // To enable continuous rendering, disable render mode
-            //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            float x = event.getX();
+            float y = event.getY();
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_MOVE:
+                    float dx = x - previousX;
+                    float dy = y - previousY;
+
+                    // reverse direction of rotation above the mid-line
+                    if (y > getHeight() / 2) {
+                        dx = dx * -1;
+                    }
+
+                    // reverse direction of rotation to left of the mid-line
+                    if (x < getWidth() / 2) {
+                        dy = dy * -1;
+                    }
+
+                    renderer.setAngle(
+                            renderer.getAngle() +
+                                    ((dx + dy) * TOUCH_SCALE_FACTOR));
+                    // tell renderer to draw frame
+                    requestRender();
+            }
+
+            previousX = x;
+            previousY = y;
+            return true;
         }
     }
 }
