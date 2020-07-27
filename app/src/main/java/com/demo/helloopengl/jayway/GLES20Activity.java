@@ -27,9 +27,10 @@ public class GLES20Activity extends AppCompatActivity {
         if (hasGLES20()) {
             mGLView = new GLSurfaceView(this);
             // Inform the default EGLContextFactory and default EGLConfigChooser which EGLContext client version to pick
-            mGLView.setEGLContextClientVersion(2);
+            //mGLView.setEGLContextClientVersion(2);        // disable for second tutorial to run
             mGLView.setPreserveEGLContextOnPause(true);
-            mGLView.setRenderer(new GLES20Renderer());
+            //mGLView.setRenderer(new GLES20Renderer());
+            mGLView.setRenderer(new OpenGLRenderer());
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not
             // supported.
