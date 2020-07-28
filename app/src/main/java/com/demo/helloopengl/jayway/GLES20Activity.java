@@ -30,7 +30,8 @@ public class GLES20Activity extends AppCompatActivity {
             //mGLView.setEGLContextClientVersion(2);        // disable for second tutorial to run
             mGLView.setPreserveEGLContextOnPause(true);
             //mGLView.setRenderer(new GLES20Renderer());
-            mGLView.setRenderer(new OpenGLRenderer());
+            //mGLView.setRenderer(new OpenGLRenderer());
+            mGLView.setRenderer(new OpenGLRenderer3());
         } else {
             // Time to get a new phone, OpenGL ES 2.0 not
             // supported.
